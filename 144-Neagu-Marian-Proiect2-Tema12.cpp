@@ -2,6 +2,6 @@
 
 int main()
 {
-    std::cout<<"first commit";
+    std::cout<<"second commit";
     return 0;
 }

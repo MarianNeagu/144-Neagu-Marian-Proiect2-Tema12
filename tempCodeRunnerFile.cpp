@@ -1,0 +1,1 @@
+eturn m_cardNr;

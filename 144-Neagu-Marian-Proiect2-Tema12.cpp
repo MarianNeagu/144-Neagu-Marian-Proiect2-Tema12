@@ -4,22 +4,43 @@
 #pragma region Clase
 class Card
 {
-    char* m_cardNr; // "1234567890123456"
-    char* m_ownerName; // "NUME PRENUME"
-    char m_expirationDate[10]; // DD/LL/AAAA
-    int m_cvv; // 123
-    double m_credit; 
+    char* m_cardNr; // Cele 16 cifre
+    char* m_ownerName; // NUME PRENUME
+    char* m_expirationDate; // DD/LL/AAAA
+    int m_cvv; // 3 cifre
+    double m_credit; // suma in RON
 
     public:
-    // Constructori, destructor
-    Card(){m_ownerName = nullptr; m_cardNr = new char[16];}
+    // Constructori
+    Card(): m_ownerName(nullptr), m_cardNr(new char[16]), m_expirationDate(new char[10]) {}
 
+    Card(const char* cardNr, const char* ownerName, const char* expirationDate, int cvv, double credit);
+
+
+    //Constructor de copiere
+
+    Card(const Card &card)
+    {
+        m_cardNr = new char[strlen(card.m_cardNr)];
+        m_ownerName = new char[strlen(card.m_ownerName)];
+        m_expirationDate = new char[strlen(card.m_expirationDate)];
+
+        strcpy(m_cardNr, card.m_cardNr);
+        strcpy(m_ownerName, card.m_ownerName);
+        strcpy(m_expirationDate, card.m_expirationDate);
+        m_cvv = card.m_cvv;
+        m_credit = card.m_credit;
+    }
+
+    // Destructor
     ~Card()
     {
         delete[] m_ownerName;
         m_ownerName = nullptr;
         delete[] m_cardNr;
         m_cardNr = nullptr;
+        delete[] m_expirationDate;
+        m_expirationDate = nullptr;
     }
 
     // Getere&Setere
@@ -28,7 +49,6 @@ class Card
     char* GetExpirationDate();
     int GetCVV();
     double GetCredit();
-
 
     void SetCardNr(const char* cardNr);
     void SetOwnerName(const char* ownerName);
@@ -50,6 +70,24 @@ class CardPremium: public CardStandard
 {
 
 };
+#pragma endregion
+
+#pragma region Constructori
+
+// CARD
+Card::Card(const char* cardNr, const char* ownerName, const char* expirationDate, int cvv, double credit)
+{
+    m_cardNr = new char[strlen(cardNr)];
+    m_ownerName = new char[strlen(cardNr)];
+    m_expirationDate = new char[strlen(cardNr)];
+
+    strcpy(m_cardNr, cardNr);
+    strcpy(m_ownerName, ownerName);
+    strcpy(m_expirationDate, expirationDate);
+    m_cvv = cvv;
+    m_credit = credit;
+}
+
 #pragma endregion
 
 #pragma region Getere&Setere
@@ -99,6 +137,7 @@ void Card::SetCredit(double credit)
 }
 #pragma endregion
 
+// CARD
 void ShowDetails_Demo(Card card)
 {
     std::cout<<"Nume: "<<card.GetOwnerName();
@@ -110,18 +149,16 @@ void ShowDetails_Demo(Card card)
     std::cout<<"CVV: "<<card.GetCVV();
     std::cout<<std::endl;
     std::cout<<"Credit curent: "<<card.GetCredit();
+    std::cout<<std::endl;
 }
 
 void Demo()
 {
-    Card card;
-    card.SetCardNr("9837983798379837");
-    card.SetOwnerName("POPESCU ION SIMION");
-    card.SetExpirationDate("12/10/2023");
-    card.SetCVV(453);
-    card.SetCredit(14.45);
+    Card card("9837983798379837", "POPESCU ION SIMION", "12/10/2023", 453, 0.0);
+    Card cardCopy(card);
 
     ShowDetails_Demo(card);
+    ShowDetails_Demo(cardCopy);
 
 }
 

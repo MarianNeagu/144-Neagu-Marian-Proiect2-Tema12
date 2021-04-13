@@ -106,8 +106,14 @@ public:
 		m_commissionExceedingLimit = 0;
 	}
 
-	// Operatori
+    // Get, Set
+    int GetWithdrawalLimit();
+    double GetCommissionExceedingLimit();
+    
+    void SetWithdrawalLimit(int withdrawalLimit);
+    void SetCommissionExceedingLimit (double commissionExceedingLimit);
 
+	// Operatori
 	CardStandard& operator= (const CardStandard& cardStandard)
 	{
 		// atribuire valori noi
@@ -116,7 +122,8 @@ public:
 		m_expirationDate = cardStandard.m_expirationDate;
 		m_cvv = cardStandard.m_cvv;
 		m_credit = cardStandard.m_credit;
-
+        m_withdrawalLimit = cardStandard.m_withdrawalLimit;
+        m_commissionExceedingLimit = cardStandard.m_commissionExceedingLimit;
 		return *this;
 	}
 	friend std::istream& operator>> (std::istream& in, CardStandard& cardStandard);
@@ -192,6 +199,26 @@ public:
 		m_cashback = 0;
 	}
 
+    CardStandard& operator= (const CardPremium& cardPremium)
+	{
+		// atribuire valori noi
+		m_ownerName = cardPremium.m_ownerName;
+		m_cardNr = cardPremium.m_cardNr;
+		m_expirationDate = cardPremium.m_expirationDate;
+		m_cvv = cardPremium.m_cvv;
+		m_credit = cardPremium.m_credit;
+        m_cashback = cardPremium.m_cashback;
+		return *this;
+	}
+
+    friend std::istream& operator>> (std::istream& in, CardPremium& cardPremium);
+	friend std::ostream& operator<< (std::ostream& out, const  CardPremium& cardPremium);
+
+    // Get, Set
+    double GetCashback();
+    void SetCashback(double cashback);
+
+
 	// Metode
 	void Withdraw(double moneyToWithdraw);
 };
@@ -211,8 +238,8 @@ void CardPremium::Withdraw(double moneyToWithdraw)
 	else
 	{
 		m_credit -= moneyToWithdraw;
-		cashback = m_cashback / 100 * moneyToWithdraw;
-		m_credit += cashback;
+		cashback = (m_cashback / 100) * moneyToWithdraw;
+		SetCredit(m_credit + cashback);
 	}
 
 	std::cout << "Extragere reusita! Ati primit cashback in valoare de: " << cashback << " RON." << std::endl;
@@ -239,7 +266,6 @@ Card::Card(std::string ownerName, std::string cardNr, std::string expirationDate
 
 #pragma endregion
 
-// TODO: getere+setere standard+premium
 #pragma region Getere&Setere
 // Getere
 std::string Card::GetCardNr()
@@ -260,8 +286,21 @@ int Card::GetCVV()
 }
 double Card::GetCredit()
 {
-
 	return m_credit;
+}
+
+int CardStandard::GetWithdrawalLimit()
+{
+    return m_withdrawalLimit;
+}
+double CardStandard::GetCommissionExceedingLimit()
+{
+    return m_commissionExceedingLimit;
+}
+
+double CardPremium::GetCashback()
+{
+    return m_cashback;
 }
 
 // Setere
@@ -285,10 +324,23 @@ void Card::SetCredit(double credit)
 {
 	m_credit = credit;
 }
+
+void CardStandard::SetWithdrawalLimit(int withdrawalLimit)
+{
+    m_withdrawalLimit = withdrawalLimit;
+}
+void CardStandard::SetCommissionExceedingLimit (double commissionExceedingLimit)
+{
+    m_commissionExceedingLimit = commissionExceedingLimit;
+}
+
+void CardPremium::SetCashback(double cashback)
+{
+    m_cashback = cashback;
+}
 #pragma endregion
 
 #pragma region Operatori
-// TODO: >> << Card Premium
 // >>
 
 // CARD
@@ -340,7 +392,32 @@ std::istream& operator>> (std::istream& in, CardStandard& cardStandard)
 
 	return in;
 }
+// CARD PREMIUM
+std::istream& operator>> (std::istream& in, CardPremium& cardPremium)
+{
+	// inca nu stiu de ce nu il ia pe primul
+	std::getline(in, cardPremium.m_ownerName); // nu il ia
 
+	std::cout << "Numele detinatorului: ";
+	std::getline(in, cardPremium.m_ownerName);
+
+	std::cout << "Numerele cardului: ";
+	std::getline(in, cardPremium.m_cardNr);
+
+	std::cout << "Data expirarii: ";
+	std::getline(in, cardPremium.m_expirationDate);
+
+	std::cout << "CVV: ";
+	in >> cardPremium.m_cvv;
+
+	std::cout << "Credit: ";
+	in >> cardPremium.m_credit;
+
+	std::cout << "Cashback: ";
+	in >> cardPremium.m_cashback;
+
+	return in;
+}
 // <<
 
 // CARD
@@ -381,23 +458,26 @@ std::ostream& operator<< (std::ostream& out, const CardStandard& cardStandard)
 	return out;
 }
 
-#pragma endregion
-
-void Demo()
+// CARD PREMIUM
+std::ostream& operator<< (std::ostream& out, const CardPremium& cardPremium)
 {
-	//Card card("9837983798379837", "POPESCU ION SIMION", "12/10/2023", 453, 0.0);
-	CardStandard cardS;
-	Card* card;
-	card = &cardS;
+	out << "Numele detinatorului:  " << cardPremium.m_ownerName;
+	out << std::endl;
+	out << "Numar Card: " << cardPremium.m_cardNr;
+	out << std::endl;
+	out << "Data expirare: " << cardPremium.m_expirationDate;
+	out << std::endl;
+	out << "CVV: " << cardPremium.m_cvv;
+	out << std::endl;
+	out << "Credit curent: " << cardPremium.m_credit;
+	out << std::endl;
+	out << "Cashback: " << cardPremium.m_cashback;
+	out << std::endl;
 
-	card->Withdraw(3);
-
-
-	// ShowDetails_Demo(card);
-
+	return out;
 }
 
-
+#pragma endregion
 
 
 void MainMenu()
@@ -409,7 +489,7 @@ void MainMenu()
 	CardPremium* cardP = nullptr;
 	int numberOfSCards;
 	int numberOfPCards;
-    static int numberOfTotalCards;
+    static int numberOfTotalCards = 0;
 
 	int comanda = -1;
 
@@ -421,7 +501,7 @@ void MainMenu()
 		std::cout << "1. Citire si memorare a N carduri. " << std::endl;
 		std::cout << "2. Afisare detalii card " << std::endl;
 		std::cout << "3. Extragere credit de pe card. " << std::endl;
-		std::cout << "4. Stergere carduri." << std::endl;
+		std::cout << "4. Introducere carduri" << std::endl;
 		std::cin >> comanda;
 
 		// comanda 0
@@ -448,7 +528,7 @@ void MainMenu()
 			{
 				std::cout << "~Introduceti numarul de carduri pe care sa le introduceti: " << std::endl;
 				std::cin >> numberOfSCards;
-
+                numberOfTotalCards += numberOfSCards;
 				cardS = new CardStandard[numberOfSCards];
 				std::cout << "~Introduceti detaliile cardurilor: " << std::endl;
 				for (int i = 0; i < numberOfSCards; i++)
@@ -462,7 +542,7 @@ void MainMenu()
 
 				std::cout << "~Introduceti numarul de carduri pe care sa le introduceti: " << std::endl;
 				std::cin >> numberOfPCards;
-
+                numberOfTotalCards += numberOfPCards;
 				cardP = new CardPremium[numberOfPCards];
 				for (int i = 0; i < numberOfPCards; i++)
 				{
@@ -470,6 +550,7 @@ void MainMenu()
 					std::cin >> cardP[i];
 				}
 			}
+            std::cout<<"Cardurile au fost inregistrate cu succes. Au fost inregistrate in total "<<numberOfTotalCards<<" carduri"<<std::endl;
 		}
 		// comanda 2
 		else if (comanda == 2)
@@ -543,7 +624,8 @@ void MainMenu()
 
 
 		}
-		// comanda 3
+		
+        // comanda 3
 		else if (comanda == 3)
         {
             int cardToDisplayIndex = -1;
@@ -590,7 +672,7 @@ void MainMenu()
 			}
             std::cout<<"Introduceti suma de extras: ";
             std::cin>>moneyToExtract;
-			if (tipCard == 'a')
+			if (toupper(tipCard) == 'A')
 			{
 				if (cardToDisplayIndex > numberOfSCards)
 				{
@@ -613,10 +695,84 @@ void MainMenu()
 				}
 			}
         }
-		
+
+    	// comanda 4
         else if (comanda == 4)
         {
+            
+            int tipCard = 0;
+            std::cout << "Alegeti tipul de carduri pe care sa le introduceti: "<<std::endl;
+			std::cout << "1. Card Standard" << std::endl;
+			std::cout << "2. Card Premium" << std::endl;
 
+			while (tipCard < 1 || tipCard > 2)
+			{
+				std::cout << "Comanda: ";
+				std::cin >> tipCard;
+				if (tipCard < 1 || tipCard > 2)
+					std::cout << "Comanda necunoscuta! Reincercati" << std::endl;
+			}
+
+			if (tipCard == 1)
+			{
+                int numberOfSCards_copy = numberOfSCards;
+				std::cout << "~Introduceti numarul de carduri pe care sa le introduceti: " << std::endl;
+				std::cin >> numberOfSCards;
+                cardS_aux = new CardStandard[numberOfSCards + numberOfSCards_copy]; // in el pun toate valorile
+                
+                for(int i = 0; i < numberOfSCards_copy; i++)
+                    cardS_aux[i] = cardS[i];  // pun element cu element in aux, mai raman numberOfSCards elemente
+                delete[] cardS;
+
+                cardS = new CardStandard[numberOfSCards + numberOfSCards_copy];
+				
+				std::cout << "~Introduceti detaliile cardurilor: " << std::endl;
+
+				for (int i = numberOfSCards_copy; i < numberOfSCards + numberOfSCards_copy; i++)
+				{
+					std::cout << "~Cardul curent de citit: " << i + 1 << std::endl;
+					std::cin >> cardS[i];
+				}
+                
+                // acum le pun si pe cele dinainte
+                 for(int i = 0; i < numberOfSCards_copy; i++)
+                    cardS[i] = cardS_aux[i];
+
+                delete[] cardS_aux;
+
+                numberOfTotalCards += numberOfSCards;
+                numberOfSCards += numberOfSCards_copy; // totalul cardurilor standarde citite
+			}
+			else
+			{
+                int numberOfPCards_copy = numberOfPCards;
+				std::cout << "~Introduceti numarul de carduri pe care sa le introduceti: " << std::endl;
+				std::cin >> numberOfPCards;
+                cardP_aux = new CardPremium[numberOfPCards + numberOfPCards_copy]; // in el pun toate valorile
+                
+                for(int i = 0; i < numberOfPCards_copy; i++)
+                    cardP_aux[i] = cardP[i];  // pun element cu element in aux, mai raman numberOfSCards elemente
+                delete[] cardP;
+
+                cardP = new CardPremium[numberOfPCards + numberOfPCards_copy];
+				
+				std::cout << "~Introduceti detaliile cardurilor: " << std::endl;
+
+				for (int i = numberOfPCards_copy; i < numberOfPCards + numberOfPCards_copy; i++)
+				{
+					std::cout << "~Cardul curent de citit: " << i + 1 << std::endl;
+					std::cin >> cardP[i];
+				}
+                
+                // acum le pun si pe cele dinainte
+                 for(int i = 0; i < numberOfPCards_copy; i++)
+                    cardP[i] = cardP_aux[i];
+
+                delete[] cardP_aux;
+
+                numberOfTotalCards += numberOfPCards;
+                numberOfPCards += numberOfPCards_copy; // totalul cardurilor premium citite
+            }
         }
         
         else std::cout << "Comanda introdusa nu e acceptata!" << std::endl;
@@ -627,33 +783,20 @@ void MainMenu()
 
 int main()
 {
-	// CardStandard* card = new CardStandard[2];
-	// for(int i = 0; i<2;i++)
-	//     std::cin>>card[i];
-
-	// Mesaj la inceput
-	// std::cout<<"Neagu Marian-Madalin - Tema 8. Clasa ~Multime~"<<std::endl<<std::endl;
-	// std::cout<<"Introdu y pentru a porni sau n pentru a iesi: ";
-	// char comanda;
-	// std::cin>>comanda;
-	// while(toupper(comanda) != 'Y')
-	// {
-	// 	if(toupper(comanda) == 'N')
-	// 		return 0;
-	// 	else
-	// 		std::cout<<"Comanda neacceptata.."<<std::endl;
-	// 	std::cout<<"Introdu y pentru a porni sau n pentru a iesi: ";
-	// 	std::cin>>comanda;
-	// }
-
-	 //Demo();
-
-
-
-	// CardStandard* cardS = new CardStandard[2];
-	// std::cin>>cardS[1];
-	// std::cout<<cardS[1];
-
+	//Mesaj la inceput
+	std::cout<<"Neagu Marian-Madalin - Tema 8. Clasa ~Multime~"<<std::endl<<std::endl;
+	std::cout<<"Introdu y pentru a porni sau n pentru a iesi: ";
+	char comanda;
+	std::cin>>comanda;
+	while(toupper(comanda) != 'Y')
+	{
+		if(toupper(comanda) == 'N')
+			return 0;
+		else
+			std::cout<<"Comanda neacceptata.."<<std::endl;
+		std::cout<<"Introdu y pentru a porni sau n pentru a iesi: ";
+		std::cin>>comanda;
+	}
 
 	MainMenu();
 	return 0;

@@ -10,9 +10,12 @@ protected:
 	int m_cvv; // 3 cifre
 	double m_credit; // suma in RON
 
+	// static
+	static int m_numberOfTotalCards;
+
 public:
 	// Constructori
-	Card() : m_ownerName(""), m_cardNr(""), m_expirationDate(""), m_cvv(0), m_credit(0) {}
+	Card() : m_ownerName(""), m_cardNr(""), m_expirationDate(""), m_cvv(0), m_credit(0) {m_numberOfTotalCards++;}
 
 	Card(std::string ownerName, std::string cardNr, std::string expirationDate, int cvv, double credit);
 
@@ -23,9 +26,11 @@ public:
 	{
 		m_ownerName = card.m_ownerName;
 		m_cardNr = card.m_cardNr;
-		m_expirationDate = m_expirationDate;
+		m_expirationDate = card.m_expirationDate;
 		m_cvv = card.m_cvv;
 		m_credit = card.m_credit;
+
+		
 	}
 
 	// Destructor
@@ -36,6 +41,7 @@ public:
 		m_expirationDate = "";
 		m_cvv = 0;
 		m_credit = 0;
+		m_numberOfTotalCards --;
 	}
 
 	// Getere&Setere
@@ -44,6 +50,10 @@ public:
 	std::string GetExpirationDate();
 	int GetCVV();
 	double GetCredit();
+	static int GetNumberOfTotalCards()
+	{
+		return m_numberOfTotalCards;
+	}
 
 	void SetCardNr(std::string cardNr);
 	void SetOwnerName(std::string ownerName);
@@ -60,7 +70,7 @@ public:
 		m_expirationDate = card.m_expirationDate;
 		m_cvv = card.m_cvv;
 		m_credit = card.m_credit;
-
+		m_numberOfTotalCards++;
 		return *this;
 	}
 	friend std::istream& operator>> (std::istream& in, Card& card);
@@ -69,6 +79,8 @@ public:
 	// Metode
 	virtual void Withdraw(double moneyToWithdraw) {}
 };
+
+int Card::m_numberOfTotalCards = 0;
 
 class CardStandard : public Card
 {
@@ -139,6 +151,7 @@ public:
 
 void CardStandard::Withdraw(double moneyToWithdraw)
 {
+	double creditAfterComission = m_credit - moneyToWithdraw - m_commissionExceedingLimit / 100 * moneyToWithdraw;
 	// Daca nu are credit suficient
 	if (m_credit < moneyToWithdraw)
 	{
@@ -149,12 +162,11 @@ void CardStandard::Withdraw(double moneyToWithdraw)
 	else if (m_withdrawalLimit > moneyToWithdraw)
 		m_credit -= moneyToWithdraw;
 	// Daca intrece comisionul
-	else
+	else if(m_withdrawalLimit <= moneyToWithdraw && m_credit > moneyToWithdraw && creditAfterComission >= 0)
 	{
 		m_credit -= moneyToWithdraw;
 		m_credit -= m_commissionExceedingLimit / 100 * moneyToWithdraw;
 	}
-	std::cout << "Extragere reusita!" << std::endl;
 	std::cout << "Credit ramas: " << m_credit << std::endl;
 
 }
@@ -256,7 +268,7 @@ void CardPremium::Withdraw(double moneyToWithdraw)
 // CARD
 Card::Card(std::string ownerName, std::string cardNr, std::string expirationDate, int cvv, double credit)
 {
-
+	m_numberOfTotalCards++;
 	m_ownerName = ownerName;
 	m_cardNr = cardNr;
 	m_expirationDate = expirationDate;
@@ -489,7 +501,7 @@ void MainMenu()
 	CardPremium* cardP = nullptr;
 	int numberOfSCards;
 	int numberOfPCards;
-    static int numberOfTotalCards = 0;
+    //static int numberOfTotalCards = 0; - inlocuit cu cel din clasa
 
 	int comanda = -1;
 
@@ -528,29 +540,33 @@ void MainMenu()
 			{
 				std::cout << "~Introduceti numarul de carduri pe care sa le introduceti: " << std::endl;
 				std::cin >> numberOfSCards;
-                numberOfTotalCards += numberOfSCards;
 				cardS = new CardStandard[numberOfSCards];
+
+				// numberOfTotalCards += numberOfSCards; 
+
 				std::cout << "~Introduceti detaliile cardurilor: " << std::endl;
 				for (int i = 0; i < numberOfSCards; i++)
 				{
 					std::cout << "~Cardul curent de citit: " << i + 1 << std::endl;
 					std::cin >> cardS[i];
 				}
+				std::cout<<"Cardurile au fost inregistrate cu succes. Au fost inregistrate in total "<<Card::GetNumberOfTotalCards()<<" carduri"<<std::endl;
 			}
 			else
 			{
 
 				std::cout << "~Introduceti numarul de carduri pe care sa le introduceti: " << std::endl;
 				std::cin >> numberOfPCards;
-                numberOfTotalCards += numberOfPCards;
+                // numberOfTotalCards += numberOfPCards;
 				cardP = new CardPremium[numberOfPCards];
 				for (int i = 0; i < numberOfPCards; i++)
 				{
 					std::cout << "~Cardul curent de citit: " << i + 1 << std::endl;
 					std::cin >> cardP[i];
 				}
+				std::cout<<"Cardurile au fost inregistrate cu succes. Au fost inregistrate in total "<<Card::GetNumberOfTotalCards()<<" carduri"<<std::endl;
 			}
-            std::cout<<"Cardurile au fost inregistrate cu succes. Au fost inregistrate in total "<<numberOfTotalCards<<" carduri"<<std::endl;
+            
 		}
 		// comanda 2
 		else if (comanda == 2)
@@ -740,7 +756,8 @@ void MainMenu()
 
                 delete[] cardS_aux;
 
-                numberOfTotalCards += numberOfSCards;
+                //numberOfTotalCards += numberOfSCards;
+				std::cout<<"Cardurile au fost inregistrate cu succes. Au fost inregistrate in total "<<cardS[numberOfSCards - 1].GetNumberOfTotalCards()<<" carduri"<<std::endl;
                 numberOfSCards += numberOfSCards_copy; // totalul cardurilor standarde citite
 			}
 			else
@@ -770,7 +787,8 @@ void MainMenu()
 
                 delete[] cardP_aux;
 
-                numberOfTotalCards += numberOfPCards;
+                //numberOfTotalCards += numberOfPCards;
+				std::cout<<"Cardurile au fost inregistrate cu succes. Au fost inregistrate in total "<<cardP[numberOfPCards - 1].GetNumberOfTotalCards()<<" carduri"<<std::endl;
                 numberOfPCards += numberOfPCards_copy; // totalul cardurilor premium citite
             }
         }
